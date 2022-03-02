@@ -1,24 +1,32 @@
 {
-    "name": "ttek/tk-database",
-    "type": "library",
-    "description": "The Tropotek Framework database libs",
-    "keywords":  ["tk", "tropotek", "database"],
-    "time": "2019-04-09",
-    "license": "MIT",
-    "authors":  [
-         {
-            "name": "Michael Mifsud",
-            "email": "info@tropotek.com.au",
-            "homepage": "http://www.tropotek.com/"
-        }
-    ],
-    "autoload":  {
-        "psr-0":  {
-            "Tk\\": ""
-        }
-    },
-    "require":  {
-        "ext-pdo": "*",
-        "ttek/tk-framework": "~3.0.0"
+  "name": "uom/tk-database",
+  "type": "library",
+  "description": "The Tropotek Framework database libs",
+  "keywords": [
+    "tk",
+    "tropotek",
+    "database"
+  ],
+  "time": "2019-04-09",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Michael Mifsud",
+      "homepage": "http://www.tropotek.com/"
     }
+  ],
+  "autoload": {
+    "psr-0": {
+      "Tk\\": ""
+    }
+  },
+  "require": {
+    "ext-pdo": "*",
+    "uom/tk-framework": "~3.0.0"
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "3.2.x-dev"
+    }
+  }
 }

@@ -27,10 +27,7 @@ class Data extends \Tk\Collection
      *
      * @var string
      */
-    public static $DB_TABLE = 'data';
-
-    // TODO: This should be made the default, we need to update child sites first
-    //public static $DB_TABLE = '_data';
+    public static $DB_TABLE = '_data';
 
     /**
      * The delete identifier for internal delete operation.
@@ -63,7 +60,7 @@ class Data extends \Tk\Collection
     /**
      * @var string
      */
-    protected $requireFid = true;
+    //protected $requireFid = true;
 
 
     /**
@@ -226,7 +223,7 @@ SQL;
     public function setFkey($fkey)
     {
         $this->fkey = $fkey;
-        $this->requireFid = ($fkey != self::SYSTEM_KEY);     // Only require a key for non system fields
+        //$this->requireFid = ($fkey != self::SYSTEM_KEY);     // Only require a key for non system fields
         return $this;
     }
 
@@ -331,10 +328,11 @@ SQL;
 //           return $this->dbDelete($key);
 //        }
 
-        // TODO: make sure this does not affect any functionality
-        if ($this->requireFid && !$this->getFid()) {
-            return $this;
-        }
+//        // TODO: make sure this does not affect any functionality
+//        // TODO: A: It affects the plugins with no fid discard this
+//        if ($this->requireFid && !$this->getFid()) {
+//            return $this;
+//        }
         $this->install();
         $value = $this->prepareSetValue($value);
 
@@ -347,7 +345,6 @@ SQL;
                 $this->db->quoteParameter($this->getTable()), $this->db->quoteParameter('key'), (int)$this->fid, $this->db->quote($this->fkey),
                 $this->db->quote($key), $this->db->quote($value));
         }
-
         Pdo::$logLastQuery = false;
         $this->db->exec($sql);
         Pdo::$logLastQuery = true;

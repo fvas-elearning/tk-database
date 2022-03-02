@@ -24,7 +24,9 @@ class TextEncrypt extends Iface
     public function __construct($propertyName, $columnName = '')
     {
         parent::__construct($propertyName, $columnName);
-
+        if ($this->getConfig()->get('db.encrypt.key')) {
+            $this->setEncryptKey($this->getConfig()->get('db.encrypt.key'));
+        }
     }
 
     /**

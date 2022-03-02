@@ -298,8 +298,8 @@ class ArrayObject implements \Iterator, \Countable
     }
 
     /**
-     * If the keyField and-or value field are set then the this will
-     * return the the array with a key and the required value.
+     * If the keyField and-or value field are set then this will
+     * return the array with a key and the required value.
      *
      * @param null $valueField
      * @param null $keyField

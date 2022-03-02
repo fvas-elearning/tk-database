@@ -54,6 +54,7 @@ class Date extends Iface
         if ($value != null && !$value instanceof \DateTime) {
             $value = \Tk\Date::createFormDate($value, null, $this->format);
         }
+
         return $value;
     }
 

@@ -303,6 +303,26 @@ class Pdo extends \PDO
         $this->getOnLogListener()->append($callable, $priority);
     }
 
+    protected $logEnabled = true;
+
+    /**
+     * @return bool
+     */
+    public function isLogEnabled(): bool
+    {
+        return $this->logEnabled;
+    }
+
+    /**
+     * @param bool $logEnabled
+     * @return Pdo
+     */
+    public function setLogEnabled(bool $logEnabled): Pdo
+    {
+        $this->logEnabled = $logEnabled;
+        return $this;
+    }
+
     /**
      * Adds an array entry to the log.
      *
@@ -310,12 +330,16 @@ class Pdo extends \PDO
      */
     public function addLog(array $entry)
     {
-        $this->log[] = $entry;
-        $this->getOnLogListener()->execute($entry);
+        if ($this->isLogEnabled()) {
+            $this->log[] = $entry;
+            $this->getOnLogListener()->execute($entry);
+        }
     }
 
     /**
      * Clears the log.
+     * // Damn this uses a lot of mem?????
+     * TODO: I think we need to look into removing this log as it can use a lot of unnecessary memory
      */
     public function clearLog()
     {
@@ -418,6 +442,42 @@ class Pdo extends \PDO
         return $result;
     }
 
+
+    /**
+     * @param $name
+     * @param $arguments
+     */
+//    public function __call($name, $arguments)
+//    {
+//        vd($name);
+//        // NOTE: this is to avoid the query() function inheritance issues with PHP7.4+
+//        if ($name = 'query') {
+//            vd();
+//            return call_user_func_array(array($this, 'tkQuery'), $arguments);
+//        }
+//    }
+
+
+    /**
+     * NOTICE FOR PHP 8.0:
+     *
+     * We will have to work out a way to use this in the future as the PDO::query override change with versions and is
+     * bad, alternatively we should stop inheriting the PDO object and make it an instance variable That wew call..
+     *
+     *  
+     *
+     * @param $statement
+     * @param int $mode
+     * @param null $arg3
+     * @param array $ctorargs
+     * @return mixed
+     */
+    public function tkQuery($statement, $mode = PDO::ATTR_DEFAULT_FETCH_MODE, $arg3 = null, array $ctorargs = array())
+    {
+        return call_user_func_array(array($this, 'query'), func_get_args());
+    }
+
+
     /**
      * Executes an SQL statement, returning a result set as a PDOStatement object
      *
@@ -431,7 +491,10 @@ class Pdo extends \PDO
      * @return PDOStatement \PDO::query() returns a PDOStatement object, or FALSE on failure.
      * @throws \Tk\Db\Exception
      */
-    public function query($statement, $mode = PDO::ATTR_DEFAULT_FETCH_MODE, $arg3 = null, array $ctorargs = array())
+    //public function tkQuery($statement, $mode =
+    // PDO::ATTR_DEFAULT_FETCH_MODE, $arg3 = null, array $ctorargs = array())
+    //public function query($statement, $mode = PDO::ATTR_DEFAULT_FETCH_MODE, $arg3 = null, array $ctorargs = array())
+    public function query(string $statement, ?int $mode = PDO::ATTR_DEFAULT_FETCH_MODE, mixed ...$fetchModeArgs)
     {
         $this->setLastQuery($statement);
         $start = microtime(true);
@@ -612,21 +675,25 @@ class Pdo extends \PDO
      */
     public function getDatabaseList()
     {
+        $result = null;
         $list = array();
         if ($this->getDriver() == 'mysql') {
             $sql = 'SHOW DATABASES';
             $result = $this->query($sql);
-            $result->setFetchMode(\PDO::FETCH_ASSOC);
-            foreach ($result as $row) {
-                $list[] = $row['Database'];
-            }
+//            $result->setFetchMode(\PDO::FETCH_ASSOC);
+//            foreach ($result as $row) {
+//                $list[] = $row['Database'];
+//            }
         } else if ($this->getDriver() == 'pgsql') {
             $sql = sprintf('SELECT datname FROM pg_database WHERE datistemplate = false');
             $result = $this->query($sql);
-            $result->setFetchMode(\PDO::FETCH_ASSOC);
-            foreach ($result as $row) {
-                $list[] = $row['datname'];
-            }
+//            $result->setFetchMode(\PDO::FETCH_ASSOC);
+//            foreach ($result as $row) {
+//                $list[] = $row['datname'];
+//            }
+        }
+        if ($result) {
+            $list = $result->fetchAll(\PDO::FETCH_COLUMN, 0);
         }
         return $list;
     }
@@ -640,21 +707,27 @@ class Pdo extends \PDO
     public function getTableList()
     {
         self::$logLastQuery = false;
+        $result = null;
         $list = array();
         if ($this->getDriver() == 'mysql') {
             $sql = 'SHOW TABLES';
             $result = $this->query($sql);
-            $result->setFetchMode(\PDO::FETCH_NUM);
-            foreach ($result as $row) {
-                $list[] = $row[0];
-            }
+//            $list = $result->fetchAll(\PDO::FETCH_COLUMN, 0);
+//            $result->setFetchMode(\PDO::FETCH_NUM);
+//            foreach ($result as $row) {
+//                $list[] = $row[0];
+//            }
         } else if ($this->getDriver() == 'pgsql') {
             $sql = sprintf('SELECT table_name FROM information_schema.tables WHERE table_schema = \'public\'');
             $result = $this->query($sql);
-            $result->setFetchMode(\PDO::FETCH_NUM);
-            foreach ($result as $row) {
-                $list[] = $row[0];
-            }
+//            $list = $result->fetchAll(\PDO::FETCH_COLUMN, 0);
+//            $result->setFetchMode(\PDO::FETCH_NUM);
+//            foreach ($result as $row) {
+//                $list[] = $row[0];
+//            }
+        }
+        if ($result) {
+            $list = $result->fetchAll(\PDO::FETCH_COLUMN, 0);
         }
         self::$logLastQuery = true;
         return $list;

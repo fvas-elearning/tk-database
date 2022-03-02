@@ -2,8 +2,7 @@
 namespace Tk\Db\Map;
 
 use Tk\ConfigTrait;
-use Tk\Db\Exception;
-use \Tk\Db\Pdo;
+use Tk\Db\Pdo;
 
 /**
  * @author Michael Mifsud <info@tropotek.com>
@@ -37,13 +36,10 @@ abstract class Model implements \Tk\Db\ModelInterface
      */
     static function createMapper($mapperClass = '', $db = null)
     {
-        if (!$mapperClass) {
+        if (!$mapperClass)
             $mapperClass = get_called_class() . self::$MAPPER_APPEND;
-//            if (version_compare(PHP_VERSION, '5.5.0', '>=')) {
-//                $mapperClass = static::class . self::$MAPPER_APPEND;
-//            }
-        }
-        //return new $mapperClass($db);
+        if (!preg_match('/'.self::$MAPPER_APPEND.'$/', $mapperClass))
+            $mapperClass = $mapperClass . self::$MAPPER_APPEND;
         return $mapperClass::create($db);
     }
 
@@ -54,8 +50,6 @@ abstract class Model implements \Tk\Db\ModelInterface
     {
         return self::createMapper(get_class($this));
     }
-
-
 
     public function __clone()
     {
@@ -83,9 +77,6 @@ abstract class Model implements \Tk\Db\ModelInterface
         }
         $this->setId(0);
     }
-
-
-
 
     /**
      * Get the model primary DB key, usually ID
@@ -119,11 +110,13 @@ abstract class Model implements \Tk\Db\ModelInterface
      * By default this is a database
      *
      * @return int The insert ID
+     * @throws \Exception
      */
     public function insert()
     {
         $id = self::createMapper()->insert($this);
-        $this->setId($id);  // Has to be here cause of private property
+        if (!$this->getId())
+            $this->setId($id);  // Has to be here cause of private property
         return $id;
     }
 
@@ -131,6 +124,7 @@ abstract class Model implements \Tk\Db\ModelInterface
      * Update the object in storage
      *
      * @return int
+     * @throws \Exception
      */
     public function update()
     {
@@ -142,6 +136,7 @@ abstract class Model implements \Tk\Db\ModelInterface
      * A Utility method that checks the id and does and insert
      * or an update  based on the objects current state
      *
+     * @throws \Exception
      */
     public function save()
     {
@@ -152,10 +147,26 @@ abstract class Model implements \Tk\Db\ModelInterface
      * Delete the object from the DB
      *
      * @return int
+     * @throws \Exception
      */
     public function delete()
     {
         return self::createMapper()->delete($this);
+    }
+
+    /**
+     * Return the deleted flag status of the object
+     * 1 = deleted
+     * 0 = not-deleted
+     *
+     * @return false
+     */
+    public function isDel()
+    {
+        if (isset($this->del)) {
+            return $this->del;
+        }
+        return false;
     }
 
     /**
@@ -168,7 +179,7 @@ abstract class Model implements \Tk\Db\ModelInterface
         if (!$this->getId()) {
             try {
                 return self::createMapper()->getDb()->getNextInsertId(self::createMapper()->getTable());
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 \Tk\Log::warning('Cannot get Model::getVolatileId() value, returning 0');
                 return 0;
             }

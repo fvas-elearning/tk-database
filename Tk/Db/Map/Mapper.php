@@ -256,12 +256,12 @@ abstract class Mapper implements Mappable
     {
         $pkp = $this->getPrimaryKeyProperty();
         if (!property_exists($obj, $pkp)) {
-            throw new \Tk\Exception('No valid primary key found');
+            throw new \Tk\Exception('No valid primary key found in object: ' . get_class($obj));
         }
-        if (!$obj->$pkp) {
-            $obj->insert();
-        } else {
+        if ($obj->$pkp) {
             $obj->update();
+        } else {
+            $obj->insert();
         }
     }
 
@@ -435,11 +435,11 @@ abstract class Mapper implements Mappable
             $alias = $this->getAlias();
             if ($alias) {
                 $alias = $alias . '.';
-                if (!preg_match('/^(ASC|DESC|FIELD\(|\'|RAND\(|IF\(|NULL)/i', $ordFieldsStr)) {
+                if (!preg_match('/^(ASC|DESC|FIELD\(|\'|RAND|CONCAT|SUBSTRING\(|IF\(|NULL|CASE)/i', $ordFieldsStr)) {
                     $ordFields = explode(',', $ordFieldsStr);
                     foreach ($ordFields as $i => $str) {
                         $str = trim($str);
-                        if (preg_match('/^(ASC|DESC|FIELD\(|\'|RAND\(|IF\(|NULL)/i', $str)) continue;
+                        if (preg_match('/^(ASC|DESC|FIELD\(|\'|RAND|CONCAT|SUBSTRING\(|IF\(|NULL|CASE)/i', $str)) continue;
                         if (strpos($str, '.') === false) {
                             $a = explode(' ', $str);
                             $str = $alias . $this->quoteParameter($a[0]);
@@ -651,7 +651,6 @@ abstract class Mapper implements Mappable
         return self::$DB_PREFIX;
     }
 
-
     /**
      * If a colum name is supplied then that column info is returned
      *
@@ -664,6 +663,15 @@ abstract class Mapper implements Mappable
             return $this->tableInfo[$column];
         }
         return $this->tableInfo;
+    }
+
+    /**
+     * @param string $column
+     * @return bool
+     */
+    public function hasColumn($column)
+    {
+        return array_key_exists($column, $this->tableInfo);
     }
 
     /**

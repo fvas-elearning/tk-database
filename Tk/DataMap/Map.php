@@ -1,6 +1,7 @@
 <?php
 namespace Tk\DataMap;
 
+use Tk\ConfigTrait;
 use Tk\Db\ModelInterface;
 
 /**
@@ -10,6 +11,7 @@ use Tk\Db\ModelInterface;
  */
 abstract class Map
 {
+    use ConfigTrait;
 
     /**
      * The storage property name, (IE: db column name)
@@ -88,11 +90,11 @@ abstract class Map
         $value = $this->toPropertyValue($row, $this->getColumnName());
 
         // TODO: This may no longer be needed???
-        if ($object instanceof \stdClass) {
-            \Tk\Log::warning('This code is used, remove comments to delete...');
-            $object->$name = $value;
-            return;
-        }
+//        if ($object instanceof \stdClass) {
+//            \Tk\Log::warning('This code is used, remove comments to delete...');
+//            $object->$name = $value;
+//            return;
+//        }
 
         \Tk\ObjectUtil::setObjectPropertyValue($object, $name, $value);
     }
